@@ -1,0 +1,4 @@
+1. Monte Carlo Dropout: https://arxiv.org/pdf/1506.02142v6.pdf
+2. Uncertainty: https://arxiv.org/pdf/2107.03342.pdf
+
+(Ask Thao if want to read more)
