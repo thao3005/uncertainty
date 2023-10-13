@@ -1,0 +1,12 @@
+1. Pipeline:
+converting 3D images into 2D slices -> train using predefined UNet model -> run inference (forward passes = 20) to get uncertainty map -> evaluate
+
+2. Recent status:
+- Code for preprocessing, model, training, mcdropout is ready
+- The model is not trained properly (no improvements in dice score)
+- Code not optimized yet (run very slowly - > 80 epochs in 24 hours)
+
+3. Previous experiments:
+- no change even when dropout rate = 0, 0.01, 0.1 or when decreasing the number of dropout layers
+- Monai UNet and nnUNet not working
+- Monai dice score, Torch dice score not working

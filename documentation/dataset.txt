@@ -1,0 +1,12 @@
+1. Training/validation data:
+- Size: 64 images (training), 16 images (validation)
+- 3D CT-scan images 
+- Healthy kidneys only, no anomaly in kidneys
+- Source: https://wiki.cancerimagingarchive.net/display/public/pancreas-ct#225140405a525c7710d147e8bfc6611f18577bb7
+- The KiTS model was used to get the segmentation (ask Thao for more information)
+
+2. Evaluation data:
+- Size: > 400 images 
+- 3D CT-scan images
+- Unhealthy kidneys, kidneys with tumors or cysts
+- Source: https://kits-challenge.org/kits23
