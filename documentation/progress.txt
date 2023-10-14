@@ -7,6 +7,6 @@ converting 3D images into 2D slices -> train using predefined UNet model -> run 
 - Code not optimized yet (run very slowly - > 80 epochs in 24 hours)
 
 3. Previous experiments:
-- no change even when dropout rate = 0, 0.01, 0.1 or when decreasing the number of dropout layers
+- No change even when dropout rate = 0, 0.01, 0.1 or when decreasing the number of dropout layers
 - Monai UNet and nnUNet not working
 - Monai dice score, Torch dice score not working
