@@ -10,14 +10,14 @@ from preprocess import Dataset2D, Dataset3D, NormalizeIntensity
 from torch.utils.data import Dataset, DataLoader
 from scipy.ndimage import zoom
 from MyUNet import UNet3D, DeepUNet2D
-from MonaiUNet import UNet
+# from MonaiUNet import UNet
 from monai.losses import DiceCELoss
-from torchmetrics.classification import Dice
+# from torchmetrics.classification import Dice
 from torch.optim.lr_scheduler import ReduceLROnPlateau
 from preprocess import train_loader, valid_loader, train_image_paths, train_label_paths, valid_image_paths, valid_label_paths
 
 # Constants
-NUM_EPOCHS = 500
+NUM_EPOCHS = 5
 MODE = '2d'
 DEVICE = torch.device('cuda')
 BEST_MODEL_PATH = None

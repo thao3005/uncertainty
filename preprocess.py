@@ -114,6 +114,7 @@ def set_up(data_folder, MODE):
 
     return train_loader, valid_loader, test_loader, train_image_paths, train_label_paths, valid_image_paths, valid_label_paths, test_image_paths, test_label_paths
 
-DATASET_FOLDER = "/work/ovens_lab/thaonguyen/uncertainty/dataset"
+# DATASET_FOLDER = "/work/ovens_lab/thaonguyen/uncertainty/dataset"
+DATASET_FOLDER = "/home/seyedsina.ziaee/src/uncertainty/dataset"
 MODE = "2d" 
 train_loader, valid_loader, test_loader, train_image_paths, train_label_paths, valid_image_paths, valid_label_paths, test_image_paths, test_label_paths = set_up(DATASET_FOLDER, MODE)
