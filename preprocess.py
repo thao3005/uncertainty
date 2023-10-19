@@ -2,6 +2,7 @@ import os
 import nibabel as nib
 import torch
 from torch.utils.data import Dataset, DataLoader
+import numpy as np
 
 class Dataset3D(Dataset):
     def __init__(self, image_paths, label_paths, transform=None):
@@ -44,18 +45,52 @@ class Dataset2D(Dataset):
         self.index_map = []
         self.img_slices_cache = []
         self.lbl_slices_cache = []
+        
+        # sina
+        # todo: create directory and change the path
+        save_img_slices_path = '/home/seyedsina.ziaee/src/uncertainty/dataset/training/2d/images'
+        save_lbl_slices_path = '/home/seyedsina.ziaee/src/uncertainty/dataset/training/2d/labels'
+        
+        
 
         for idx, (img_path, lbl_path) in enumerate(zip(image_paths, label_paths)):
             img_3d = nib.load(img_path, mmap=False).get_fdata()
             lbl_3d = nib.load(lbl_path, mmap=False).get_fdata()
 
             depth = img_3d.shape[2]
+            # sina
+            # getting the name of the files
+            try:                    
+                img_name = str(img_path).split("/")[-1].replace(".nii.gz", "")
+                lbl_name = str(lbl_path).split("/")[-1].replace(".nii.gz", "")
+            except:
+                print("Exception in getting file name")
             for slice_idx in range(depth):
                 self.index_map.append((idx, slice_idx))
                 img_slice = img_3d[:, :, slice_idx]
                 lbl_slice = lbl_3d[:, :, slice_idx]
                 self.img_slices_cache.append(img_slice)
                 self.lbl_slices_cache.append(lbl_slice)
+                
+                # sina
+                # adding images and labels to file
+                try:
+                    # there are no files, create them :D
+                    if len(os.listdir(save_img_slices_path)) == 0:
+                        img_name_num = f'{img_name}_{slice_idx}'
+                        lbl_name_num = f'{lbl_name}_{slice_idx}'
+                        # saving arrays in text files
+                        np.savetxt(f'{save_img_slices_path}/{img_name_num}.txt', img_slice, fmt='%d')
+                        np.savetxt(f'{save_lbl_slices_path}/{lbl_name_num}.txt', lbl_slice, fmt='%d')
+                        ## to load for later
+                        # img = np.loadtxt(f'{img_name_num}.txt', dtype=int)
+                        # lbl = np.loadtxt(f'{lbl_name_num}.txt', dtype=int)
+                    # there are files so just read them
+                    # todo: read files
+                    else:
+                        pass
+                except:
+                    print(f'Exception in saving image slices in files')
 
             del img_3d
             del lbl_3d
