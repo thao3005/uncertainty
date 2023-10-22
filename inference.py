@@ -9,10 +9,11 @@ from tqdm import tqdm
 from torchmetrics.classification import Dice
 from preprocess import test_loader, test_image_paths, test_label_paths 
 from collections import defaultdict
+from monai.losses import DiceLoss
 
 MODE = '2d'
 DEVICE = torch.device('cuda')
-BEST_MODEL_PATH = '/work/ovens_lab/thaonguyen/uncertainty/training_results/2023-09-15_10-55-48/best_model.pth'
+BEST_MODEL_PATH = '/work/ovens_lab/thaonguyen/uncertainty/training_results/2023-10-20_19-06-36/best_model.pth'
 OUTPUT_DIR = '/work/ovens_lab/thaonguyen/uncertainty/predictions'
 
 def dice_coefficient(target, preds):
@@ -26,6 +27,8 @@ def dice_coefficient(target, preds):
     
     return dice.item() 
 
+dice_ce_loss = DiceLoss(to_onehot_y=True)
+
 def load_model(mode, path):
     if mode == '2d':
         model = DeepUNet2D().to(DEVICE)
@@ -37,7 +40,7 @@ def load_model(mode, path):
     return model
 
 def infer_and_save(model, loader, original_image_paths, dataset):
-    dice_scores = []
+    running_dice = 0.0
 
     slices_counts = get_slices_count(dataset)
     reconstructed_volume = defaultdict(list)
@@ -48,10 +51,12 @@ def infer_and_save(model, loader, original_image_paths, dataset):
             batch_images, batch_labels = batch_images.to(DEVICE), batch_labels.to(DEVICE)
             outputs = model(batch_images)
             #outputs = outputs[:,1].round()
-            
+            loss = dice_ce_loss(outputs, batch_labels)
+
             print(f"Shape of outputs: {outputs.shape}")
 
-            dice_scores.append(dice_coefficient(batch_labels, outputs))
+            dice_value = 1 - loss
+            running_dice += dice_value.item()
             
             for j in range(batch_images.size(0)): 
                 volume_idx, _ = dataset.index_map[i * loader.batch_size + j]
@@ -82,7 +87,7 @@ def infer_and_save(model, loader, original_image_paths, dataset):
             
             del batch_images, batch_labels
 
-    return np.mean(dice_scores)
+    return running_dice / len(loader)
 
 def get_slices_count(dataset):
     """Returns a list of slice counts for each 3D image in the dataset."""
