@@ -11,7 +11,7 @@ from torch.utils.data import Dataset, DataLoader
 from scipy.ndimage import zoom
 from MyUNet import UNet3D, DeepUNet2D
 from MonaiUNet import UNet
-from monai.losses import DiceCELoss
+from monai.losses import DiceLoss
 from torchmetrics.classification import Dice
 from torch.optim.lr_scheduler import ReduceLROnPlateau
 from preprocess import train_loader, valid_loader, train_image_paths, train_label_paths, valid_image_paths, valid_label_paths
@@ -36,7 +36,7 @@ def dice_coefficient(target, preds):
     
     return dice
 
-dice_ce_loss = DiceCELoss(to_onehot_y=True)
+dice_ce_loss = DiceLoss(to_onehot_y=True)
 
 # ================= Training Utilities =================
 
@@ -56,7 +56,7 @@ def train_one_epoch(model, loader, optimizer):
         optimizer.step()
 
         # threshold_outputs = (outputs >= 0.5).float()
-        dice_value = dice_coefficient(batch_labels, outputs)
+        dice_value = 1 - loss
         running_dice += dice_value.item()
 
         running_loss += loss.item()
@@ -74,7 +74,7 @@ def evaluate(model, loader):
             outputs = model(batch_images)
             loss = dice_ce_loss(outputs, batch_labels)
 
-            dice_value = dice_coefficient(batch_labels, outputs)
+            dice_value = 1 - loss
             running_dice += dice_value.item()
 
             running_loss += loss.item()
