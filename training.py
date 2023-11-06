@@ -23,7 +23,7 @@ from torch.cuda import memory_summary
 NUM_EPOCHS = 500
 MODE = '2d'
 DEVICE = torch.device('cuda')
-BEST_MODEL_PATH = None
+BEST_MODEL_PATH = '/work/ovens_lab/thaonguyen/uncertainty/training_results/2023-11-03_12-30-01/best_model.pth'
 TRAINING_RESULTS_DIR = 'training_results'
 
 # ================= Loss Functions and Dice Score =================
@@ -95,11 +95,8 @@ def save_validation_predictions(model, loader, original_image_paths, val_predict
             
             for j, image in enumerate(batch_images):
                 image_path_idx = batch_idx * loader.batch_size + j
-                #print(f"Processing slice {j} in batch {batch_idx}, image path index: {image_path_idx}")  # This should be inside the loop
-            
-                #print("len(dataset.image_paths): ", len(dataset.image_paths))
                 if image_path_idx >= len(dataset.image_paths):
-                    break 
+                    break  # This handles the case where the last batch may not be full
                 
                 filename = os.path.basename(dataset.image_paths[image_path_idx])
                 volume_idx = filename.split('_')[2]
@@ -107,8 +104,8 @@ def save_validation_predictions(model, loader, original_image_paths, val_predict
                 # Extract the raw probability values
                 slice_prob = outputs[j, 1].cpu().numpy()[:, :, np.newaxis]
 
-                # Debug: Save the probability map to a text file for inspection
-                prob_map_filename = f"prob_map_{volume_idx}_slice{j}_epoch{epoch+1}.txt"
+                # Save the probability map to a text file for inspection
+                prob_map_filename = f"prob_map_{volume_idx}_slice{image_path_idx}_epoch{epoch+1}.txt"
                 prob_map_filepath = os.path.join(val_probabilities_dir, prob_map_filename)
                 np.savetxt(prob_map_filepath, slice_prob[:,:,0], fmt='%f')
 
@@ -122,15 +119,18 @@ def save_validation_predictions(model, loader, original_image_paths, val_predict
 
                 # Check if all slices for the current volume have been processed
                 if len(reconstructed_volume[volume_idx]) == expected_slices_per_volume[volume_idx]:
+                    # Stack slices to form the volume
                     volume_3d = np.stack(reconstructed_volume[volume_idx], axis=2)
                     pred_nii = nib.Nifti1Image(volume_3d, affine=np.eye(4))
 
+                    # Construct the output filename
                     output_filename_pred = f"validation_pred_{volume_idx}_epoch{epoch+1}.nii.gz"
                     output_filepath = os.path.join(val_predictions_dir, output_filename_pred)
                     nib.save(pred_nii, output_filepath)
 
                     print(f"Volume {volume_idx} saved with {len(reconstructed_volume[volume_idx])} slices.")
 
+                    # Clear the stored slices for the current volume
                     del reconstructed_volume[volume_idx]
                     del probability_volume[volume_idx]
 
@@ -174,8 +174,8 @@ def main():
     log_path = os.path.join(training_path, 'training_log.txt')
 
     base_path = '/work/ovens_lab/thaonguyen/uncertainty'
-    val_predictions_dir = os.path.join(base_path, 'val_predictions(with prob)')
-    val_probabilities_dir = os.path.join(base_path, 'val_prob')
+    val_predictions_dir = os.path.join(base_path, 'val_predictions(continue)')
+    val_probabilities_dir = os.path.join(base_path, 'val_prob(continue)')
 
     mode_print = f"Running {MODE} model"
     print(mode_print)
@@ -190,8 +190,8 @@ def main():
     elif MODE == '3d':
         model = UNet3D().to(DEVICE)
 
-    if os.path.exists(best_model_path):
-        model.load_state_dict(torch.load(best_model_path))
+    if os.path.exists(BEST_MODEL_PATH):
+        model.load_state_dict(torch.load(BEST_MODEL_PATH))
         print("Loaded weights from best_model.pth")
 
     optimizer = optim.SGD(model.parameters(), lr=0.001)
